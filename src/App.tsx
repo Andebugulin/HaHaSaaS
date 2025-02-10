@@ -2,31 +2,92 @@ import React, { useState } from 'react';
 import { Terminal } from 'lucide-react';
 
 const JokeTerminal = () => {
-  const [jokes, setJokes] = useState([]);
+  const [commands, setCommands] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const commands = {
-    'help': 'Available commands: random, category <name>, list, clear',
-    'random': 'Fetching random joke...',
-    'clear': 'clear',
-    'list': 'Available categories: programming, dad-jokes, science'
+  const listCommands = {
+    'help': 'Displays a list of available commands and their usage.',
+    'clear': 'Clears the terminal screen.',
+    'rndj --category -c': 'Fetches a random joke. Use `--category` or `-c` to specify a category.',
+    'lsc': 'Lists all available joke categories.',
+    'lsj --category -c': 'Lists all jokes. Use `--category` or `-c` to filter by a specific category.',
+    'catj --id': 'Retrieves a specific joke by its ID.',
+    'addc': 'Adds a new joke category.',
+    'addj --category -c': 'Adds a new joke to an existing category. Use `--category` or `-c` to specify the category.',
+    'addj --category --id': 'Adds an existing joke to another category. Use `--category` to specify the category and `--id` to specify the joke ID.',
+    'good --id': 'Likes a joke. Use `--id` to specify the joke ID.',
+    'bad --id': 'Dislikes a joke. Use `--id` to specify the joke ID.'
   };
 
   const handleCommand = (cmd) => {
     setLoading(true);
-    const newJokes = [...jokes];
-    
-    newJokes.push({ type: 'input', content: `guest@hahasaas:~$ ${cmd}` });
-    
-    if (cmd === 'clear') {
-      setJokes([]);
-    } else {
-      const response = commands[cmd] || 'Command not found. Type "help" for available commands.';
-      newJokes.push({ type: 'output', content: response });
+    const newCommands = [...commands];
+    newCommands.push({ type: 'input', content: cmd }); // Add the input command to the history
+  
+    const args = cmd.split(' '); // Split the command into parts
+    const command = args[0]; // The first part is the command
+    const params = args.slice(1); // The rest are parameters
+  
+    let response = '';
+  
+    switch (command) {
+      case 'help':
+        response = 'Available commands:\n\n' +
+          Object.entries(listCommands)
+            .map(([key, value]) => `**${key}**: ${value}`) // TODO: Have to figure out why \t or \n doesn't not work in web, but a bit lazy right now
+            .join('\n\n');
+        break;
+      case 'clear':
+        setCommands([]);
+        setInput('');
+        setLoading(false);
+        return; 
+      case 'rndj':
+        response = `Fetching a random joke${
+          params.includes('--category') || params.includes('-c') ? ` from category: ${params[params.indexOf('--category') + 1] || params[params.indexOf('-c') + 1]}` : ''
+        }`;
+        // TODO: Call the API to fetch a random joke
+        break;
+      case 'lsc':
+        response = 'Listing all categories';
+        // TODO: Call the API to fetch all categories
+        break;
+      case 'lsj':
+        response = `Listing all jokes${
+          params.includes('--category') || params.includes('-c') ? ` from category: ${params[params.indexOf('--category') + 1] || params[params.indexOf('-c') + 1]}` : ''
+        }`;
+        // TODO: Call the API to fetch jokes
+        break;
+      case 'catj':
+        response = `Fetching joke with ID: ${params[params.indexOf('--id') + 1]}`;
+        // TODO: Call the API to fetch a joke by ID
+        break;
+      case 'addc':
+        response = 'Adding a new category';
+        // TODO: Call the API to add a category
+        break;
+      case 'addj':
+        response = `Adding a joke${
+          params.includes('--category') || params.includes('-c') ? ` to category: ${params[params.indexOf('--category') + 1] || params[params.indexOf('-c') + 1]}` : ''
+        }`;
+        // TODO: Call the API to add a joke
+        break;
+      case 'good':
+        response = `Liking joke with ID: ${params[params.indexOf('--id') + 1]}`;
+        // TODO: Call the API to like a joke
+        break;
+      case 'bad':
+        response = `Disliking joke with ID: ${params[params.indexOf('--id') + 1]}`;
+        // TODO: Call the API to dislike a joke
+        break;
+      default:
+        response = 'Command not found. Type "help" for available commands.';
+        break;
     }
-    
-    setJokes(newJokes);
+  
+    newCommands.push({ type: 'output', content: response }); // Add the output to the history
+    setCommands(newCommands);
     setLoading(false);
     setInput('');
   };
@@ -46,7 +107,7 @@ const JokeTerminal = () => {
               Type 'help' for available commands.
             </div>
             
-            {jokes.map((entry, idx) => (
+            {commands.map((entry, idx) => (
               <div 
                 key={idx} 
                 className={`${
