@@ -137,6 +137,18 @@ func setupRouter() *gin.Engine {
 			c.JSON(http.StatusOK, gin.H{"message": "Joke added successfully"})
 		})
 
+		// POST existing joke to category because joke can be in multiple categories
+		api.POST("/joke/category/:category/:id", func(c *gin.Context) {
+			category := c.Param("category")
+			id := c.Param("id")
+			err := addJokeToCategory(convertToInt(id), category)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"message": "Joke added to category successfully"})
+		})
+
 		// Like a joke
 		api.POST("/joke/like/:id", func(c *gin.Context) {
 			id := c.Param("id")
@@ -158,6 +170,8 @@ func setupRouter() *gin.Engine {
 			}
 			c.JSON(http.StatusOK, gin.H{"message": "Joke disliked successfully"})
 		})
+
+
     }
 
     return r

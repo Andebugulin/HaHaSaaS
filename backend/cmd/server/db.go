@@ -256,6 +256,31 @@ func dislikeJoke(id int) error {
 
 	return nil
 }
+
+//add existing joke to another category as well
+func addJokeToCategory(id int, category string) error {
+	tx, err := dbConn.Begin()
+	if err != nil {
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+
+	var categoryID int
+	err = tx.QueryRow("SELECT id FROM categories WHERE name = $1", category).Scan(&categoryID)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error fetching category: %v", err)
+	}
+
+	_, err = tx.Exec("INSERT INTO jokes_categories (joke_id, category_id) VALUES ($1, $2)", id, categoryID)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error adding joke to category: %v", err)
+	}
+
+	tx.Commit()
+	return nil
+}
+
 // test all functions in db.go besides InitDB
 func testDB() {
     fmt.Println("\n=== Starting Database Tests ===\n")
