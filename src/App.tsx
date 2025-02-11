@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { Terminal } from 'lucide-react';
 
+interface Command {
+  type: 'input' | 'output';
+  content: string;
+}
+
 const JokeTerminal = () => {
-  const [commands, setCommands] = useState([]);
+  const [commands, setCommands] = useState<Command[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -20,7 +25,7 @@ const JokeTerminal = () => {
     'bad --id': 'Dislikes a joke. Use `--id` to specify the joke ID.'
   };
 
-  const handleCommand = (cmd) => {
+  const handleCommand = (cmd: string) => {
     setLoading(true);
     const newCommands = [...commands];
     newCommands.push({ type: 'input', content: cmd }); // Add the input command to the history
