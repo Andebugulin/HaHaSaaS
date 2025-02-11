@@ -35,25 +35,25 @@ func setupRouter() *gin.Engine {
     api := r.Group("/api")
     {
         // GET random joke
-        api.GET("/joke/random", func(c *gin.Context) {
-            joke, err := fetchRandomJoke()
-            if err != nil {
-                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-                return
-            }
-            c.JSON(http.StatusOK, gin.H{"joke": joke})
-        })
+		api.GET("/joke/random", func(c *gin.Context) {
+			joke, err := fetchRandomJoke()
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"joke": joke})
+		})
 
         // GET random joke by category
         api.GET("/joke/random/:category", func(c *gin.Context) {
-            category := c.Param("category")
-            joke, err := fetchRandomJokeByCategory(category)
-            if err != nil {
-                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-                return
-            }
-            c.JSON(http.StatusOK, gin.H{"joke": joke})
-        })
+			category := c.Param("category")
+			joke, err := fetchRandomJokeByCategory(category)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"joke": joke})
+		})
 
 		// GET all categories
 		api.GET("/joke/categories", func(c *gin.Context) {
@@ -89,7 +89,12 @@ func setupRouter() *gin.Engine {
 		// GET joke by ID
 		api.GET("/joke/:id", func(c *gin.Context) {
 			id := c.Param("id")
-			joke, err := fetchJokeByID(convertToInt(id))
+			jokeID, err := strconv.Atoi(id)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "invalid joke ID"})
+				return
+			}
+			joke, err := fetchJokeByID(jokeID)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return

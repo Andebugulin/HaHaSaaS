@@ -41,6 +41,13 @@ import (
 // Declare db as a package-level variable
 var dbConn *sql.DB  // Changed name to dbConn to avoid confusion
 
+type Joke struct {
+    ID       int    `json:"id"`
+    Content  string `json:"content"`
+    Likes    int    `json:"likes"`
+    Dislikes int    `json:"dislikes"`
+}
+
 func InitDB() error {
     connStr := fmt.Sprintf(
         "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
@@ -66,34 +73,36 @@ func InitDB() error {
 }
 
 // fetch a random joke
-func fetchRandomJoke() (string, error) {
-	var joke string
-	err := dbConn.QueryRow("SELECT content FROM jokes ORDER BY RANDOM() LIMIT 1").Scan(&joke)
-	if err != nil {
-		return "", fmt.Errorf("error fetching joke: %v", err)
-	}
-
-	return joke, nil
+func fetchRandomJoke() (Joke, error) {
+    var joke Joke
+    err := dbConn.QueryRow(`
+        SELECT j.id, j.content, COALESCE(jr.likes, 0), COALESCE(jr.dislikes, 0)
+        FROM jokes j
+        LEFT JOIN joke_reactions jr ON j.id = jr.joke_id
+        ORDER BY RANDOM()
+        LIMIT 1`).Scan(&joke.ID, &joke.Content, &joke.Likes, &joke.Dislikes)
+    if err != nil {
+        return Joke{}, fmt.Errorf("error fetching joke: %v", err)
+    }
+    return joke, nil
 }
 
 // fetching a random joke from a specific category
-func fetchRandomJokeByCategory(category string) (string, error) {
-	var joke string
-	err := dbConn.QueryRow(
-		`SELECT content
-		FROM jokes
-		JOIN jokes_categories ON jokes.id = jokes_categories.joke_id
-		JOIN categories ON jokes_categories.category_id = categories.id
-		WHERE categories.name = $1
-		ORDER BY RANDOM()
-		LIMIT 1`,
-		category,
-	).Scan(&joke)
-	if err != nil {
-		return "", fmt.Errorf("error fetching joke: %v", err)
-	}
-
-	return joke, nil
+func fetchRandomJokeByCategory(category string) (Joke, error) {
+    var joke Joke
+    err := dbConn.QueryRow(`
+        SELECT j.id, j.content, COALESCE(jr.likes, 0), COALESCE(jr.dislikes, 0)
+        FROM jokes j
+        LEFT JOIN joke_reactions jr ON j.id = jr.joke_id
+        JOIN jokes_categories jc ON j.id = jc.joke_id
+        JOIN categories c ON jc.category_id = c.id
+        WHERE c.name = $1
+        ORDER BY RANDOM()
+        LIMIT 1`, category).Scan(&joke.ID, &joke.Content, &joke.Likes, &joke.Dislikes)
+    if err != nil {
+        return Joke{}, fmt.Errorf("error fetching joke: %v", err)
+    }
+    return joke, nil
 }
 
 // retrieve all categories
@@ -168,14 +177,17 @@ func fetchJokesByCategory(category string) ([]string, error) {
 
 
 // fetch a joke by id
-func fetchJokeByID(id int) (string, error) {
-	var joke string
-	err := dbConn.QueryRow("SELECT content FROM jokes WHERE id = $1", id).Scan(&joke)
-	if err != nil {
-		return "", fmt.Errorf("error fetching joke: %v", err)
-	}
-
-	return joke, nil
+func fetchJokeByID(id int) (Joke, error) {
+    var joke Joke
+    err := dbConn.QueryRow(`
+        SELECT j.id, j.content, COALESCE(jr.likes, 0), COALESCE(jr.dislikes, 0)
+        FROM jokes j
+        LEFT JOIN joke_reactions jr ON j.id = jr.joke_id
+        WHERE j.id = $1`, id).Scan(&joke.ID, &joke.Content, &joke.Likes, &joke.Dislikes)
+    if err != nil {
+        return Joke{}, fmt.Errorf("error fetching joke: %v", err)
+    }
+    return joke, nil
 }
 
 // adding a new category
@@ -213,6 +225,12 @@ func addJoke(content, category string) error {
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("error adding joke to category: %v", err)
+	}
+
+	_, err = tx.Exec("INSERT INTO joke_reactions (joke_id) VALUES ($1)", jokeID)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error adding joke reactions: %v", err)
 	}
 
 	tx.Commit()
