@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Terminal } from 'lucide-react';
 
 interface Command {
@@ -17,6 +17,17 @@ const JokeTerminal = () => {
   const [commands, setCommands] = useState<Command[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const terminalRef = useRef<HTMLDivElement>(null);
+
+  const asciiArt = `
+  ██╗  ██╗ █████╗ ██╗  ██╗ █████╗ ███████╗ █████╗  █████╗ ███████╗
+  ██║  ██║██╔══██╗██║  ██║██╔══██╗██╔════╝██╔══██╗██╔══██╗██╔════╝
+  ███████║███████║███████║███████║███████╗███████║███████║███████╗
+  ██╔══██║██╔══██║██╔══██║██╔══██║╚════██║██╔══██║██╔══██║╚════██║
+  ██║  ██║██║  ██║██║  ██║██║  ██║███████║██║  ██║██║  ██║███████║
+  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝
+  =============== Humor as a Service Terminal v1.0.0 ===============
+  `;
 
   // Update the listCommands object in your component:
   const listCommands = {
@@ -190,17 +201,23 @@ const JokeTerminal = () => {
               ? await fetchRandomJokeByCategory(category)
               : await fetchRandomJoke();
             response = formatJokeOutput(randomJoke);
+            setInput('');
+            setLoading(false);
             break;
 
         case 'lsc':
           const categories = await fetchCategories();
           response = 'Available Categories:\n' + categories.join('\n');
+          setInput('');
+          setLoading(false);
           break;
 
         case 'lsj':
           const listCategory = getCategory(params);
           const jokes = listCategory ? await fetchJokesByCategory(listCategory) : await fetchAllJokes();
           response = 'Jokes:\n' + jokes.join('\n');
+          setInput('');
+          setLoading(false);
           break;
 
         case 'catj':
@@ -211,6 +228,8 @@ const JokeTerminal = () => {
             const joke = await fetchJokeByID(id);
             response = formatJokeOutput(joke);
           }
+          setInput('');
+          setLoading(false);
           break;
 
         case 'addc':
@@ -220,6 +239,8 @@ const JokeTerminal = () => {
           } else {
             response = await addCategory(name);
           }
+          setInput('');
+          setLoading(false);
           break;
 
           // Update the handleCommand's addj case:
@@ -262,7 +283,10 @@ const JokeTerminal = () => {
             }
           }
         }
+        setInput('');
+        setLoading(false);
         break;
+
         case 'good':
           const likeId = params[params.indexOf('--id') + 1];
           if (!likeId) {
@@ -270,6 +294,8 @@ const JokeTerminal = () => {
           } else {
             response = await likeJoke(likeId);
           }
+          setInput('');
+          setLoading(false);
           break;
 
         case 'bad':
@@ -279,6 +305,8 @@ const JokeTerminal = () => {
           } else {
             response = await dislikeJoke(dislikeId);
           }
+          setInput('');
+          setLoading(false);
           break;
 
         default:
@@ -293,20 +321,40 @@ const JokeTerminal = () => {
     setCommands(newCommands);
     setLoading(false);
     setInput('');
+    setTimeout(() => {
+      const inputElement = document.querySelector('input');
+      if (inputElement) inputElement.focus();
+    }, 0);
   };
 
+  // Auto-scroll effect
+  useEffect(() => {
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  }, [commands]);
+
   return (
-    <div className="min-h-screen bg-black p-4">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-gray-800 rounded-t-lg p-2 flex items-center gap-2">
-          <Terminal className="w-4 h-4 text-green-400" />
-          <span className="text-green-400 text-sm font-mono">HaHaSaaS Terminal v1.0.0</span>
+    <div className="min-h-screen bg-gray-900 p-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="bg-black rounded-t-lg p-3 flex items-center gap-2 border-t-2 border-x-2 border-green-500">
+          <Terminal className="w-5 h-5 text-green-500" />
+          <span className="text-green-500 text-sm font-mono font-bold">HaHaSaaS Terminal</span>
+          <div className="flex-1" />
+          <div className="flex gap-2">
+            <div className="w-3 h-3 rounded-full bg-yellow-500" />
+            <div className="w-3 h-3 rounded-full bg-green-500" />
+            <div className="w-3 h-3 rounded-full bg-red-500" />
+          </div>
         </div>
         
-        <div className="bg-black border border-gray-800 rounded-b-lg p-4 font-mono text-sm">
-          <div className="h-96 overflow-y-auto space-y-2">
-            <div className="text-green-400">
-              Welcome to HaHaSaaS - Humor as a Service{'\n'}
+        <div className="bg-black border-2 border-green-500 rounded-b-lg p-4 font-mono text-sm">
+          <div 
+            ref={terminalRef}
+            className="h-[32rem] overflow-y-auto space-y-2 scrollbar-thin scrollbar-thumb-green-500 scrollbar-track-gray-800"
+          >
+            <pre className="text-green-500 text-xs leading-tight">{asciiArt}</pre>
+            <div className="text-green-400 mb-4">
               Type 'help' for available commands.
             </div>
             
@@ -314,15 +362,17 @@ const JokeTerminal = () => {
               <div 
                 key={idx} 
                 className={`whitespace-pre-wrap ${
-                  entry.type === 'input' ? 'text-green-400' : 'text-gray-300'
+                  entry.type === 'input' 
+                    ? 'text-green-400 bg-gray-900 bg-opacity-20 p-1 rounded' 
+                    : 'text-cyan-400 mt-1 mb-3'
                 }`}
               >
-                {entry.type === 'input' ? '$ ' : ''}{entry.content}
+                {entry.type === 'input' ? '$ ' : '➜ '}{entry.content}
               </div>
             ))}
             
-            <div className="flex items-center text-green-400">
-              <span>$ </span>
+            <div className="flex items-center text-green-400 bg-gray-900 bg-opacity-20 p-1 rounded">
+              <span className="text-yellow-400">$&nbsp;</span>
               <input
                 type="text"
                 value={input}
@@ -332,8 +382,7 @@ const JokeTerminal = () => {
                     handleCommand(input);
                   }
                 }}
-                className="flex-1 bg-transparent outline-none border-none text-green-400"
-                disabled={loading}
+                className="flex-1 bg-transparent outline-none border-none text-green-400 font-mono"
                 autoFocus
               />
             </div>
