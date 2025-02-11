@@ -349,10 +349,10 @@ const JokeTerminal = () => {
         </div>
         
         <div className="bg-black border-2 border-green-500 rounded-b-lg p-4 font-mono text-sm">
-          <div 
-            ref={terminalRef}
-            className="h-[32rem] overflow-y-auto space-y-2 scrollbar-thin scrollbar-thumb-green-500 scrollbar-track-gray-800"
-          >
+        <div 
+          ref={terminalRef}
+          className="h-[32rem] overflow-y-auto space-y-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-900 [&::-webkit-scrollbar-thumb]:bg-green-500/50 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-green-500"
+        >
             <pre className="text-green-500 text-xs leading-tight">{asciiArt}</pre>
             <div className="text-green-400 mb-4">
               Type 'help' for available commands.
