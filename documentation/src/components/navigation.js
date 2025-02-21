@@ -90,7 +90,7 @@ export default class Navigation extends React.PureComponent {
         {footerContent}
 
         <a
-          href="http://localhost:5173/"
+          href={`http://${window.location.hostname}:5173/`}
           target="_blank"
           rel="noopener noreferrer"
           className="fixed bottom-1 right-6 bg-blue-500 text-white p-3 rounded-full hover:bg-blue-600 transition-colors duration-200"

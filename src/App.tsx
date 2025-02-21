@@ -337,7 +337,7 @@ const JokeTerminal = () => {
   return (
     <div className="min-h-screen bg-gray-900 p-6">
       <a
-        href="http://localhost:9966/"
+        href={`http://${window.location.hostname}:9966/`}
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 bg-green-700 text-white p-4 rounded-full shadow-lg hover:bg-green-800 transition-colors duration-200"
