@@ -336,6 +336,14 @@ const JokeTerminal = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
+      <a
+        href="http://localhost:9966/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 bg-green-700 text-white p-4 rounded-full shadow-lg hover:bg-green-800 transition-colors duration-200"
+      >
+        📚 Docs
+      </a>
       <div className="max-w-5xl mx-auto">
         <div className="bg-black rounded-t-lg p-3 flex items-center gap-2 border-t-2 border-x-2 border-green-500">
           <Terminal className="w-5 h-5 text-green-500" />
