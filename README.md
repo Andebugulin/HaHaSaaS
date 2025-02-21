@@ -125,7 +125,7 @@ The terminal interface supports the following commands:
 
 ## API Endpoints
 
-### Jokes
+### HaHaSaaS
 - `GET /api/joke/random`: Get a random joke
 - `GET /api/joke/random/:category`: Get a random joke from a category
 - `GET /api/joke/categories`: Get all categories

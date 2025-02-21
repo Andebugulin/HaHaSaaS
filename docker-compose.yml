@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   frontend:
     build:
@@ -28,6 +27,17 @@ services:
       - DB_NAME=jokes
     depends_on:
       - postgres
+
+  documentation:
+    build:
+      context: .
+      dockerfile: Dockerfile.documentation
+    ports:
+      - "9966:9966"
+    networks:
+      - app-network
+    volumes:
+      - ./documentation:/app/documentation
 
   postgres:
     image: postgres:17.2-alpine

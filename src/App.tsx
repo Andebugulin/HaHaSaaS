@@ -215,7 +215,7 @@ const JokeTerminal = () => {
         case 'lsj':
           const listCategory = getCategory(params);
           const jokes = listCategory ? await fetchJokesByCategory(listCategory) : await fetchAllJokes();
-          response = 'Jokes:\n' + jokes.join('\n');
+          response = 'HaHaSaaS:\n' + jokes.join('\n');
           setInput('');
           setLoading(false);
           break;

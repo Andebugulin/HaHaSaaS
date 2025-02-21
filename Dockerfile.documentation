@@ -1,0 +1,22 @@
+# Dockerfile.documentation
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy the cloned docbox repository
+COPY documentation/ ./
+
+# Install dependencies
+RUN npm install
+
+# Create content directory if it doesn't exist
+RUN mkdir -p content
+
+# Copy the example content from the original repo
+RUN cp content/example.md content/api.md
+
+# Expose the port
+EXPOSE 9966
+
+# Start the development server
+CMD ["npm", "start"]
